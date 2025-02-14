@@ -27,6 +27,7 @@ const AddInvoicePage: React.FC = () => {
   });
 
   const [dueDate, setDueDate] = useState<Date | null>(null);
+  const [invoiceNumber, setInvoiceNumber] = useState<string>('');
 
   const generateInvoiceNumber = () => {
     const now = new Date();
@@ -37,11 +38,13 @@ const AddInvoicePage: React.FC = () => {
     const minutes = String(now.getMinutes()).padStart(2, '0');
     const seconds = String(now.getSeconds()).padStart(2, '0');
     const milliseconds = String(now.getMilliseconds()).padStart(3, '0').slice(0, 2);
-    return `INV${year}${month}${day}${hours}${minutes}${seconds}${milliseconds}`;
+    return `${year}${month}${day}${hours}${minutes}${seconds}${milliseconds}`;
   };
 
   useEffect(() => {
-    setValue('number', generateInvoiceNumber());
+    const generatedNumber = generateInvoiceNumber();
+    setInvoiceNumber(generatedNumber);
+    setValue('number', generatedNumber);
   }, [setValue]);
 
   const onSubmit = (data: InvoiceFormData) => {
@@ -66,36 +69,36 @@ const AddInvoicePage: React.FC = () => {
             helperText={errors.name?.message}
           />
           <TextField
-            label="Invoice Number"
+            label="Number"
             fullWidth
             margin="normal"
-            placeholder= "Enter your invoice number"
-            {...register('number')}
+            defaultValue={`INV${invoiceNumber}`}
             error={!!errors.number}
             helperText={errors.number?.message}
             disabled
             slotProps={{
               input: {
-                style: { backgroundColor: '#f0f0f0' },
+                readOnly: true,
+                style: { backgroundColor: '#F0F0F0' },
               },
             }}
           />
-        <LocalizationProvider dateAdapter={AdapterDateFns}>
+          <LocalizationProvider dateAdapter={AdapterDateFns}>
             <DatePicker
-            label="Due Date"
-            value={dueDate}
-            onChange={(newValue: Date | null) => {
+              label="Due Date"
+              value={dueDate}
+              onChange={(newValue: Date | null) => {
                 setDueDate(newValue);
                 setValue('dueDate', newValue ? newValue.toISOString() : '');
-            }}
-            slotProps={{
+              }}
+              slotProps={{
                 textField: {
-                fullWidth: true,
-                margin: "normal"
+                  fullWidth: true,
+                  margin: "normal"
                 }
-            }}
-        />
-        </LocalizationProvider>
+              }}
+            />
+          </LocalizationProvider>
           <NumericFormat
             placeholder="Enter your invoice amount"
             label="Amount"
