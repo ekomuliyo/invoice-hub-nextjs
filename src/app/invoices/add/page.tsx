@@ -27,7 +27,6 @@ const AddInvoicePage: React.FC = () => {
   });
 
   const [dueDate, setDueDate] = useState<Date | null>(null);
-  const [isFocused, setIsFocused] = useState(false);
 
   const generateInvoiceNumber = () => {
     const now = new Date();
@@ -70,7 +69,7 @@ const AddInvoicePage: React.FC = () => {
             label="Invoice Number"
             fullWidth
             margin="normal"
-            placeholder={isFocused ? "Enter your invoice number" : ""}
+            placeholder= "Enter your invoice number"
             {...register('number')}
             error={!!errors.number}
             helperText={errors.number?.message}
