@@ -17,6 +17,7 @@ const ListInvoicePage: React.FC = () => {
     statusFilter,
     openDialog,
     successMessage,
+    isDeletingId,
     loadInvoices,
     handlePaginationModelChange,
     handleSearchChange,
@@ -69,6 +70,7 @@ const ListInvoicePage: React.FC = () => {
             onPaginationModelChange={handlePaginationModelChange}
             onEdit={handleEdit}
             onDelete={handleDelete}
+            isDeletingId={isDeletingId}
           />
         </div>
       </div>

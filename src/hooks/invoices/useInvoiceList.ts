@@ -16,6 +16,7 @@ export const useInvoiceList = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedInvoiceId, setSelectedInvoiceId] = useState<number | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [isDeletingId, setIsDeletingId] = useState<number | null>(null);
 
   const router = useRouter();
 
@@ -66,12 +67,17 @@ export const useInvoiceList = () => {
 
   const handleConfirmDelete = async () => {
     if (selectedInvoiceId !== null) {
-      const result = await deleteInvoice(selectedInvoiceId);
-      if (result.success) {
-        await loadInvoices();
-        setSuccessMessage('Invoice deleted successfully');
+      setIsDeletingId(selectedInvoiceId);
+      try {
+        const result = await deleteInvoice(selectedInvoiceId);
+        if (result.success) {
+          await loadInvoices();
+          setSuccessMessage('Invoice deleted successfully');
+        }
+      } finally {
+        setIsDeletingId(null);
+        handleCloseDialog();
       }
-      handleCloseDialog();
     }
   };
 
@@ -84,6 +90,7 @@ export const useInvoiceList = () => {
     statusFilter,
     openDialog,
     successMessage,
+    isDeletingId,
     loadInvoices,
     handlePaginationModelChange,
     handleSearchChange,

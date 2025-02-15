@@ -22,16 +22,18 @@ interface BaseTableProps {
   onPaginationModelChange: (model: { page: number; pageSize: number }) => void;
   onEdit: (id: number) => void;
   onDelete: (id: number) => void;
+  isDeletingId: number | null;
 }
 
 const BaseTable: React.FC<BaseTableProps> = ({
   rows,
-  pageSizeOptions = [5, 10, 20],
+  pageSizeOptions = [10, 25, 50],
   paginationModel,
   rowCount,
   onPaginationModelChange,
   onEdit,
   onDelete,
+  isDeletingId
 }) => {
   const columns: GridColDef[] = [
     { 
@@ -107,21 +109,19 @@ const BaseTable: React.FC<BaseTableProps> = ({
     {
       field: 'actions',
       headerName: 'Actions',
-      width: 150,
-      align: 'center',
-      headerAlign: 'center',
+      width: 120,
       renderCell: (params) => (
-        <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-          <IconButton
-            color="secondary"
+        <Box>
+          <IconButton 
             onClick={() => onEdit(params.row.id)}
-            style={{ marginRight: 8 }}
+            color="primary"
           >
             <EditIcon />
           </IconButton>
           <IconButton
-            color="warning"
             onClick={() => onDelete(params.row.id)}
+            color="error"
+            disabled={isDeletingId === params.row.id}
           >
             <DeleteIcon />
           </IconButton>
