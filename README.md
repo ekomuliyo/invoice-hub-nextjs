@@ -31,4 +31,4 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 
 ## Deploy on Vercel
 
-you can check this project live in url [invoice-hub-nextjs.vercel.app]([https://nextjs.org/docs](https://invoice-hub-nextjs-git-main-ekomuliyos-projects.vercel.app))
+you can check this project live in url [invoice-hub-nextjs.vercel.app]([https://nextjs.org/docs](https://invoice-hub-nextjs-git-main-ekomuliyos-projects.vercel.app)
