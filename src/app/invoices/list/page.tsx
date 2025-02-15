@@ -1,65 +1,43 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import Layout from '../../../components/Layout';
-import { Typography, TextField, Select, MenuItem, FormControl, InputLabel, SelectChangeEvent } from '@mui/material';
+import { Typography, TextField, Select, MenuItem, FormControl, InputLabel, Alert } from '@mui/material';
 import BaseTable from '../../../components/invoices/BaseTable';
-import { fetchInvoices } from '../../../utils/api';
-import { format } from 'date-fns';
+import ConfirmationDialog from '../../../components/invoices/ConfirmationDialog';
+import { useInvoiceList } from '../../../hooks/invoices';
 
-const InvoiceListPage: React.FC = () => {
-  const [rows, setRows] = useState([]);
-  const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(10);
-  const [rowCount, setRowCount] = useState(0);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
+const ListInvoicePage: React.FC = () => {
+  const {
+    rows,
+    page,
+    pageSize,
+    rowCount,
+    searchQuery,
+    statusFilter,
+    openDialog,
+    successMessage,
+    loadInvoices,
+    handlePaginationModelChange,
+    handleSearchChange,
+    handleStatusChange,
+    handleEdit,
+    handleDelete,
+    handleCloseDialog,
+    handleConfirmDelete,
+    setSuccessMessage
+  } = useInvoiceList();
 
   useEffect(() => {
-    const loadInvoices = async () => {
-      const result = await fetchInvoices(page + 1, pageSize, searchQuery, statusFilter);
-      if (result.success) {
-        // Format the due_date and amount fields
-        const formattedRows = result.data.rows.map((row: {
-          id: number;
-          name: string;
-          number: string;
-          due_date: string | null;
-          amount: number;
-          status: string;
-        }) => ({
-          ...row,
-          due_date: row.due_date ? format(new Date(row.due_date), 'yyyy-MM-dd') : '',
-          amount: new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(row.amount),
-        }));
-        setRows(formattedRows);
-        setRowCount(result.data.totalCount);
-      } else {
-        console.error(result.message);
-      }
-    };
-
     loadInvoices();
-  }, [page, pageSize, searchQuery, statusFilter]);
-
-  const handlePaginationModelChange = (model: { page: number; pageSize: number }) => {
-    setPage(model.page);
-    setPageSize(model.pageSize);
-  };
-
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(event.target.value);
-  };
-
-  const handleStatusChange = (event: SelectChangeEvent<string>) => {
-    setStatusFilter(event.target.value);
-  };
+  }, [loadInvoices]);
 
   return (
     <Layout>
       <Typography variant="h4" gutterBottom>
         My Invoices
       </Typography>
+      {successMessage && <Alert severity="success" onClose={() => setSuccessMessage(null)}>{successMessage}</Alert>}
       <TextField
         label="Search"
         variant="outlined"
@@ -81,7 +59,7 @@ const InvoiceListPage: React.FC = () => {
           <MenuItem value="Overdue">Overdue</MenuItem>
         </Select>
       </FormControl>
-      <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
         <div style={{ flexGrow: 1 }}>
           <BaseTable
             rows={rows}
@@ -89,11 +67,20 @@ const InvoiceListPage: React.FC = () => {
             pageSizeOptions={[5, 10, 20]}
             rowCount={rowCount}
             onPaginationModelChange={handlePaginationModelChange}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
           />
         </div>
       </div>
+      <ConfirmationDialog
+        open={openDialog}
+        onClose={handleCloseDialog}
+        onConfirm={handleConfirmDelete}
+        title="Confirm Delete"
+        content="Are you sure you want to delete this invoice?"
+      />
     </Layout>
   );
 };
 
-export default InvoiceListPage;
+export default ListInvoicePage;

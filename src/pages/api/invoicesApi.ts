@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { Pool } from 'pg';
 import { replaceNamedParams } from '../../utils/sqlHelpers';
+
 const pool = new Pool({
   user: process.env.DB_USER,
   host: process.env.DB_HOST,
@@ -14,6 +15,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   res.setHeader('Cache-Control', 'no-store');
   switch (req.method) {
     case 'GET':
+      if (req.query.id) {
+        return getInvoiceById(req, res);
+      }
       return getInvoices(req, res);
     case 'POST':
       return addInvoice(req, res);
@@ -68,9 +72,24 @@ async function getInvoices(req: NextApiRequest, res: NextApiResponse) {
   }
 }
 
+async function getInvoiceById(req: NextApiRequest, res: NextApiResponse) {
+  const { id } = req.query;
+  try {
+    const result = await pool.query('SELECT * FROM invoices WHERE id = $1', [id]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Invoice not found' });
+    }
+    res.status(200).json({data: result.rows[0], message: "Success"});
+  } catch (error) {
+    const err = error as Error;
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+}
+
 async function addInvoice(req: NextApiRequest, res: NextApiResponse) {
   const { name, number, dueDate, amount, status } = req.body;
   try {
+    console.log(req.body);
     const result = await pool.query(
       'INSERT INTO invoices (name, number, due_date, amount, status) VALUES ($1, $2, $3, $4, $5) RETURNING *',
       [name, number, dueDate, amount, status]

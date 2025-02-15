@@ -1,18 +1,8 @@
-import { z } from 'zod';
+import { InvoiceFormDataSchema } from '../lib/schemas/invoiceSchema';
 
-export const invoiceSchema = z.object({
-    name: z.string().min(1, "Name is required"),
-    number: z.string().min(1, "Number is required"),
-    dueDate: z.coerce.date(),
-    amount: z.number().min(1, "Amount is required"),
-    status: z.string().min(1, "Status is required"),
-  });
-
-export type InvoiceFormData = z.infer<typeof invoiceSchema>;
-
-export const addInvoice = async (data: InvoiceFormData) => {
+export const addInvoice = async (data: InvoiceFormDataSchema) => {
     try {
-        const response = await fetch('/api/invoices', {
+        const response = await fetch('/api/invoicesApi', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -33,7 +23,7 @@ export const addInvoice = async (data: InvoiceFormData) => {
 
 export const fetchInvoices = async (page: number, pageSize: number, search: string = '', status: string = '') => {
     try {
-        const response = await fetch(`/api/invoices?page=${page}&pageSize=${pageSize}&search=${encodeURIComponent(search)}&status=${encodeURIComponent(status)}`);
+        const response = await fetch(`/api/invoicesApi?page=${page}&pageSize=${pageSize}&search=${encodeURIComponent(search)}&status=${encodeURIComponent(status)}`);
         if (!response.ok) {
             throw new Error('Failed to fetch invoices');
         }
@@ -41,6 +31,58 @@ export const fetchInvoices = async (page: number, pageSize: number, search: stri
         return { success: true, data };
     } catch (error) {
         console.error('Error fetching invoices:', error as Error);
+        return { success: false, message: (error as Error).message };
+    }
+};
+
+export const deleteInvoice = async (id: number) => {
+    try {
+        const response = await fetch(`/api/invoicesApi?id=${id}`, {
+            method: 'DELETE',
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to delete invoice');
+        }
+
+        return { success: true, message: 'Invoice deleted successfully' };
+    } catch (error) {
+        console.error('Error deleting invoice:', error as Error);
+        return { success: false, message: (error as Error).message };
+    }
+};
+
+export const fetchInvoiceById = async (id: number) => {
+    try {
+        const response = await fetch(`/api/invoicesApi?id=${id}`);
+        if (!response.ok) {
+            throw new Error('Failed to fetch invoice');
+        }
+        const data = await response.json();
+        return { success: true, data };
+    } catch (error) {
+        console.error('Error fetching invoice:', error as Error);
+        return { success: false, message: (error as Error).message };
+    }
+};
+
+export const updateInvoice = async (id: number, data: InvoiceFormDataSchema) => {
+    try {
+        const response = await fetch(`/api/invoicesApi?id=${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to update invoice');
+        }
+
+        return { success: true, message: 'Invoice updated successfully' };
+    } catch (error) {
+        console.error('Error updating invoice:', error as Error);
         return { success: false, message: (error as Error).message };
     }
 };
