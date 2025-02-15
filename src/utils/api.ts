@@ -12,21 +12,36 @@ export type InvoiceFormData = z.infer<typeof invoiceSchema>;
 
 export const addInvoice = async (data: InvoiceFormData) => {
     try {
-      const response = await fetch('/api/invoices', {
+        const response = await fetch('/api/invoices', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+            'Content-Type': 'application/json',
         },
         body: JSON.stringify(data),
-      });
-  
-      if (response.status === 201) {
+        });
+
+        if (response.status === 201) {
         return { success: true, message: 'Invoice added successfully!' };
-      } else {
+        } else {
         throw new Error('Failed to add invoice');
-      }
+        }
     } catch (error) {
-      console.error('Error adding invoice:', error as Error);
-      return { success: false, message: (error as Error).message };
+        console.error('Error adding invoice:', error as Error);
+        return { success: false, message: (error as Error).message };
     }
-  };
+};
+
+export const fetchInvoices = async (page: number, pageSize: number, search: string = '', status: string = '') => {
+    try {
+        const response = await fetch(`/api/invoices?page=${page}&pageSize=${pageSize}&search=${encodeURIComponent(search)}&status=${encodeURIComponent(status)}`);
+        if (!response.ok) {
+            throw new Error('Failed to fetch invoices');
+        }
+        const data = await response.json();
+        return { success: true, data };
+    } catch (error) {
+        console.error('Error fetching invoices:', error as Error);
+        return { success: false, message: (error as Error).message };
+    }
+};
+

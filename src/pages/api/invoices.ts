@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { Pool } from 'pg';
-
+import { replaceNamedParams } from '../../utils/sqlHelpers';
 const pool = new Pool({
   user: process.env.DB_USER,
   host: process.env.DB_HOST,
@@ -11,6 +11,7 @@ const pool = new Pool({
 });
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  res.setHeader('Cache-Control', 'no-store');
   switch (req.method) {
     case 'GET':
       return getInvoices(req, res);
@@ -27,9 +28,40 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 }
 
 async function getInvoices(req: NextApiRequest, res: NextApiResponse) {
+  const { page = 1, pageSize = 10, search = '', status } = req.query;
+  const offset = (Number(page) - 1) * Number(pageSize);
+
   try {
-    const result = await pool.query('SELECT * FROM invoices');
-    res.status(200).json(result.rows);
+    const searchQuery = `%${search}%`;
+    const params: Record<string, string | number> = {
+      search1: searchQuery,
+      search2: searchQuery,
+      pageSize: Number(pageSize),
+      offset: Number(offset),
+    };
+
+    let statusCondition = '';
+    if (status && typeof status === 'string' && status.trim() !== '' && status !== 'All') {
+      statusCondition = 'AND status = :status';
+      params.status = status;
+    }
+
+    const { text: queryText, values: queryParams } = replaceNamedParams(
+      `SELECT * FROM invoices WHERE (name ILIKE :search1 OR number ILIKE :search2) ${statusCondition} LIMIT :pageSize OFFSET :offset`,
+      params
+    );
+
+    const result = await pool.query(queryText, queryParams);
+
+    const { text: countText, values: countParams } = replaceNamedParams(
+      `SELECT COUNT(*) FROM invoices WHERE (name ILIKE :search1 OR number ILIKE :search2) ${statusCondition}`,
+      params
+    );
+
+    const totalCountResult = await pool.query(countText, countParams);
+    const totalCount = parseInt(totalCountResult.rows[0].count, 10);
+
+    res.status(200).json({ rows: result.rows, totalCount });
   } catch (error) {
     const err = error as Error;
     res.status(500).json({ error: 'Internal Server Error', message: err.message });
