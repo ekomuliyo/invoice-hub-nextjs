@@ -59,13 +59,6 @@ npm run dev
 
 5. **Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.**
 
-## Database Schema
-
-The application uses PostgreSQL with the following main tables:
-- `invoices`
-- `users`
-- `invoice_items`
-
 ## Deployment
 
 This project is deployed on Vercel with automatic deployments from the main branch.
