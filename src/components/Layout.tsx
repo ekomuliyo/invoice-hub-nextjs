@@ -9,16 +9,22 @@ import AddIcon from '@mui/icons-material/Add';
 import ListIcon from '@mui/icons-material/List';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
+import { useRouter } from 'next/navigation';
 
 const drawerWidth = 240;
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const theme = useTheme();
+  const router = useRouter();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
+  };
+
+  const handleHomeClick = () => {
+    router.push('/');
   };
 
   return (
@@ -59,7 +65,19 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         }}
       >
         <Box sx={{ overflow: 'auto' }}>
-          <Typography variant="h6" sx={{ padding: 2, color: '#FFFFFF', textAlign: 'center' }}>
+          <Typography 
+            variant="h6" 
+            sx={{ 
+              padding: 2, 
+              color: '#FFFFFF', 
+              textAlign: 'center',
+              cursor: 'pointer',
+              '&:hover': {
+                opacity: 0.8
+              }
+            }}
+            onClick={handleHomeClick}
+          >
             InvoiceHub
           </Typography>
           <Typography variant="subtitle1" sx={{ paddingLeft: 2, color: '#FFFFFF' }}>
