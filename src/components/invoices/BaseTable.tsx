@@ -1,7 +1,7 @@
 import React from 'react';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import './BaseTable.css'; // Import the CSS file
-import { IconButton, Chip, Box } from '@mui/material';
+import { IconButton, Chip, Box, useTheme, useMediaQuery } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 
@@ -35,52 +35,29 @@ const BaseTable: React.FC<BaseTableProps> = ({
   onDelete,
   isDeletingId
 }) => {
-  const columns: GridColDef[] = [
-    { 
-      field: 'id', 
-      headerName: 'ID', 
-      width: 80,
-      align: 'center',
-      headerAlign: 'center'
-    },
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  const mobileColumns: GridColDef[] = [
     { 
       field: 'name', 
       headerName: 'Name', 
-      flex: 1, 
-      cellClassName: 'wrap-content',
-      align: 'left',
-      headerAlign: 'left'
-    },
-    { 
-      field: 'number', 
-      headerName: 'Number', 
-      flex: 1, 
-      cellClassName: 'wrap-content',
-      align: 'center',
-      headerAlign: 'center'
-    },
-    { 
-      field: 'dueDate', 
-      headerName: 'Due Date', 
-      flex: 1, 
-      cellClassName: 'wrap-content',
-      align: 'center',
-      headerAlign: 'center'
+      flex: 1,
+      minWidth: 100,
     },
     { 
       field: 'amount', 
       headerName: 'Amount', 
-      flex: 1, 
-      cellClassName: 'wrap-content',
+      flex: 1,
+      minWidth: 100,
       align: 'right',
-      headerAlign: 'right'
+      headerAlign: 'right',
     },
     { 
       field: 'status', 
       headerName: 'Status', 
       flex: 1,
-      align: 'center',
-      headerAlign: 'center',
+      minWidth: 80,
       renderCell: (params) => {
         const statusColors = {
           Paid: 'success',
@@ -89,20 +66,89 @@ const BaseTable: React.FC<BaseTableProps> = ({
         } as const;
 
         return (
-          <Box sx={{ 
-            display: 'flex', 
-            justifyContent: 'center', 
-            alignItems: 'center',
-            width: '100%',
-            height: '100%'
-          }}>
-            <Chip
-              label={params.value}
-              size="small"
-              color={statusColors[params.value as keyof typeof statusColors]}
-              sx={{ minWidth: 80 }}
-            />
-          </Box>
+          <Chip
+            label={params.value}
+            size="small"
+            color={statusColors[params.value as keyof typeof statusColors]}
+            sx={{ minWidth: 60 }}
+          />
+        );
+      }
+    },
+    {
+      field: 'actions',
+      headerName: 'Actions',
+      width: 100,
+      renderCell: (params) => (
+        <Box>
+          <IconButton 
+            onClick={() => onEdit(params.row.id)}
+            color="primary"
+            size="small"
+          >
+            <EditIcon fontSize="small" />
+          </IconButton>
+          <IconButton
+            onClick={() => onDelete(params.row.id)}
+            color="error"
+            disabled={isDeletingId === params.row.id}
+            size="small"
+          >
+            <DeleteIcon fontSize="small" />
+          </IconButton>
+        </Box>
+      ),
+    },
+  ];
+
+  const desktopColumns: GridColDef[] = [
+    { 
+      field: 'name', 
+      headerName: 'Name', 
+      flex: 1,
+      minWidth: 150,
+      cellClassName: 'wrap-content'
+    },
+    { 
+      field: 'number', 
+      headerName: 'Number', 
+      flex: 1,
+      minWidth: 120,
+      cellClassName: 'wrap-content'
+    },
+    { 
+      field: 'dueDate', 
+      headerName: 'Due Date', 
+      flex: 1,
+      minWidth: 120,
+      cellClassName: 'wrap-content'
+    },
+    { 
+      field: 'amount', 
+      headerName: 'Amount', 
+      flex: 1,
+      minWidth: 150,
+      cellClassName: 'wrap-content'
+    },
+    { 
+      field: 'status', 
+      headerName: 'Status', 
+      flex: 1,
+      minWidth: 120,
+      renderCell: (params) => {
+        const statusColors = {
+          Paid: 'success',
+          Pending: 'warning',
+          Overdue: 'error'
+        } as const;
+
+        return (
+          <Chip
+            label={params.value}
+            size="small"
+            color={statusColors[params.value as keyof typeof statusColors]}
+            sx={{ minWidth: 80 }}
+          />
         );
       }
     },
@@ -115,15 +161,17 @@ const BaseTable: React.FC<BaseTableProps> = ({
           <IconButton 
             onClick={() => onEdit(params.row.id)}
             color="primary"
+            size="small"
           >
-            <EditIcon />
+            <EditIcon fontSize="small" />
           </IconButton>
           <IconButton
             onClick={() => onDelete(params.row.id)}
             color="error"
             disabled={isDeletingId === params.row.id}
+            size="small"
           >
-            <DeleteIcon />
+            <DeleteIcon fontSize="small" />
           </IconButton>
         </Box>
       ),
@@ -131,18 +179,51 @@ const BaseTable: React.FC<BaseTableProps> = ({
   ];
 
   return (
-    <div style={{ height: 'calc(100vh - 250px)', width: '100%' }}>
+    <Box sx={{ 
+      width: '100%',
+      '& .MuiDataGrid-root': {
+        backgroundColor: 'white',
+        border: 'none',
+        '& .MuiDataGrid-cell': {
+          borderBottom: '1px solid #f0f0f0',
+        },
+      },
+      '& .MuiDataGrid-columnHeaders': {
+        backgroundColor: '#fafafa',
+        borderBottom: '1px solid #f0f0f0',
+      }
+    }}>
       <DataGrid
         rows={rows}
-        columns={columns}
+        columns={isMobile ? mobileColumns : desktopColumns}
         pagination
         paginationMode="server"
         pageSizeOptions={pageSizeOptions}
         paginationModel={paginationModel}
         rowCount={rowCount}
         onPaginationModelChange={onPaginationModelChange}
+        disableColumnMenu
+        disableRowSelectionOnClick
+        sx={{
+          minHeight: 400,
+          width: '100%',
+          '& .MuiDataGrid-cell': {
+            fontSize: isMobile ? '0.75rem' : '0.875rem',
+            padding: isMobile ? '8px 4px' : '16px',
+          },
+          '& .MuiDataGrid-columnHeader': {
+            fontSize: isMobile ? '0.75rem' : '0.875rem',
+            padding: isMobile ? '8px 4px' : '16px',
+          },
+          '& .MuiDataGrid-row': {
+            minHeight: isMobile ? '48px !important' : '52px !important',
+          },
+          '& .MuiDataGrid-virtualScroller': {
+            minHeight: '200px',
+          }
+        }}
       />
-    </div>
+    </Box>
   );
 };
 
