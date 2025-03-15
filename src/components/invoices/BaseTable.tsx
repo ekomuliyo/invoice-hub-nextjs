@@ -210,6 +210,8 @@ const BaseTable: React.FC<BaseTableProps> = ({
           '& .MuiDataGrid-cell': {
             fontSize: isMobile ? '0.75rem' : '0.875rem',
             padding: isMobile ? '8px 4px' : '16px',
+            display: 'flex',
+            alignItems: 'center',
           },
           '& .MuiDataGrid-columnHeader': {
             fontSize: isMobile ? '0.75rem' : '0.875rem',
